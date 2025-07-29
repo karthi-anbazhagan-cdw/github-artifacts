@@ -80,10 +80,6 @@ jobs:
           name: dist-node-18
           path: ./dist
 
-      - name: Copy package.json files
-        run: |
-          cp package*.json .
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
