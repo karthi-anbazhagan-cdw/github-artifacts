@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, develop]
 
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: karthianbazhagan/node-ts-app
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -61,3 +65,34 @@ jobs:
 
       - name: Run tests using dist
         run: npm test
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download dist artifact from Node 18
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-node-18
+          path: ./dist
+
+      - name: Copy package.json files
+        run: |
+          cp package*.json .
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }}:latest .
+
+      - name: Push Docker image
+        run: docker push ${{ env.IMAGE_NAME }}:latest
